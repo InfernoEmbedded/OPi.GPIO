@@ -34,7 +34,9 @@ across Raspberry Pi and Orange Pi. Quoting from the RPi.GPIO documentation:
     boards.*
 
 This library monkeys the original implementation (and the documentation, as you
-are about to find out), by adding a third numbering system that is SUNXI naming.
+are about to find out), by adding a third and fourth numbering system that is
+SUNXI naming (using ARM P<port><pin> semantics, eg. PA12), and raw naming,
+using the unmapped GPIO numbers that Linux uses.
 
 .. image:: ../doc/images/OrangePi_Zero_Pinout_header.jpg
 
@@ -73,7 +75,7 @@ OPi.GPIO module allows you to configure the SOC to do this in software:
    GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 (where channel is the channel number based on the numbering system you have
-specified - BOARD, BCM or SUNXI).
+specified - BOARD, BCM, RAW or SUNXI).
 
 Testing inputs (polling)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -243,7 +245,7 @@ import warnings
 from OPi.constants import IN, OUT
 from OPi.constants import LOW, HIGH                     # noqa: F401
 from OPi.constants import NONE, RISING, FALLING, BOTH   # noqa: F401
-from OPi.constants import BCM, BOARD, SUNXI, CUSTOM
+from OPi.constants import BCM, RAW, BOARD, SUNXI, CUSTOM
 from OPi.pin_mappings import get_gpio_pin, set_custom_pin_mappings
 from OPi import event, sysfs
 
@@ -266,7 +268,7 @@ def getmode():
     """
     To detect which pin numbering system has been set.
 
-    :returns: :py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.SUNXI`
+    :returns: :py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW`, :py:attr:`GPIO.SUNXI`
         or :py:attr:`None` if not set.
     """
     return _mode
@@ -277,14 +279,15 @@ def setmode(mode):
     You must call this method prior to using all other calls.
 
     :param mode: the mode, one of :py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`,
-        :py:attr:`GPIO.SUNXI`, or a `dict` or `object` representing a custom
+        :py:attr:`GPIO.SUNXI`, :py:attr:`GPIO.RAW`,
+        or a `dict` or `object` representing a custom
         pin mapping.
     """
     if hasattr(mode, '__getitem__'):
         set_custom_pin_mappings(mode)
         mode = CUSTOM
 
-    assert mode in [BCM, BOARD, SUNXI, CUSTOM]
+    assert mode in [BCM, BOARD, RAW, SUNXI, CUSTOM]
     global _mode
     _mode = mode
 
@@ -299,7 +302,7 @@ def setup(channel, direction, initial=None, pull_up_down=None):
     You need to set up every channel you are using as an input or an output.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :param direction: whether to treat the GPIO pin as input or output (use only
         :py:attr:`GPIO.IN` or :py:attr:`GPIO.OUT`).
     :param initial: (optional) When supplied and setting up an output pin,
@@ -374,7 +377,7 @@ def input(channel):
     Read the value of a GPIO pin.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :returns: This will return either :py:attr:`0` / :py:attr:`GPIO.LOW` /
         :py:attr:`False` or :py:attr:`1` / :py:attr:`GPIO.HIGH` / :py:attr:`True`).
     """
@@ -388,7 +391,7 @@ def output(channel, state):
     Set the output state of a GPIO pin.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :param state: can be :py:attr:`0` / :py:attr:`GPIO.LOW` / :py:attr:`False`
         or :py:attr:`1` / :py:attr:`GPIO.HIGH` / :py:attr:`True`.
 
@@ -416,7 +419,7 @@ def wait_for_edge(channel, trigger, timeout=-1):
     is detected.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :param trigger: The event to detect, one of: :py:attr:`GPIO.RISING`,
         :py:attr:`GPIO.FALLING` or :py:attr:`GPIO.BOTH`.
     :param timeout: (optional) TODO
@@ -460,7 +463,7 @@ def add_event_detect(channel, trigger, callback=None, bouncetime=None):
     responding to GUI events in a timely basis.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :param trigger: The event to detect, one of: :py:attr:`GPIO.RISING`,
         :py:attr:`GPIO.FALLING` or :py:attr:`GPIO.BOTH`.
     :param callback: (optional) TODO
@@ -486,7 +489,7 @@ def add_event_detect(channel, trigger, callback=None, bouncetime=None):
 def remove_event_detect(channel):
     """
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     """
     _check_configured(channel, direction=IN)
     pin = get_gpio_pin(_mode, channel)
@@ -496,7 +499,7 @@ def remove_event_detect(channel):
 def add_event_callback(channel, callback, bouncetime=None):
     """
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :param callback: TODO
     :param bouncetime: (optional) TODO
     """
@@ -529,7 +532,7 @@ def event_detected(channel):
     :py:attr:`GPIO.FALLING` or :py:attr:`GPIO.BOTH`.
 
     :param channel: the channel based on the numbering system you have specified
-        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM` or :py:attr:`GPIO.SUNXI`).
+        (:py:attr:`GPIO.BOARD`, :py:attr:`GPIO.BCM`, :py:attr:`GPIO.RAW` or :py:attr:`GPIO.SUNXI`).
     :returns: :py:attr:`True` if an edge event was detected, else :py:attr:`False`.
     """
     _check_configured(channel, direction=IN)
