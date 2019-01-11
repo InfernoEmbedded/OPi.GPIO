@@ -22,8 +22,12 @@ def setup():
 
 def test_mode():
     assert GPIO.getmode() is None
-    GPIO.setmode(GPIO.BCM)
-    assert GPIO.getmode() == GPIO.BCM
+    GPIO.setmode(GPIO.RAW)
+    assert GPIO.getmode() == GPIO.RAW
+    GPIO.setmode(GPIO.BORAD)
+    assert GPIO.getmode() == GPIO.BORAD
+    GPIO.setmode(GPIO.SUNXI)
+    assert GPIO.getmode() == GPIO.SUNXI
     GPIO.cleanup()
     assert GPIO.getmode() is None
     with pytest.raises(AssertionError):

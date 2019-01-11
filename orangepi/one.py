@@ -12,7 +12,7 @@ Usage:
    import orangepi.one
    from OPi import GPIO
 
-   GPIO.setmode(orangepi.one.BOARD) or GPIO.setmode(orangepi.one.BCM)
+   GPIO.setmode(orangepi.one.BOARD)
 """
 
 # pin number = (position of letter in alphabet - 1) * 32 + pin number
@@ -23,5 +23,3 @@ import orangepi.pc
 # Orange Pi One physical board pin to GPIO pin
 BOARD = orangepi.pc.BOARD
 
-# Orange Pi One BCM pin to actual GPIO pin
-BCM = orangepi.pc.BCM

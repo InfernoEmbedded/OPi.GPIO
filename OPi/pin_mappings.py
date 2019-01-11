@@ -4,7 +4,7 @@
 
 import functools
 from copy import deepcopy
-from OPi.constants import BOARD, BCM, RAW, SUNXI, CUSTOM
+from OPi.constants import BOARD, RAW, SUNXI, CUSTOM
 
 
 class _sunXi(object):
@@ -23,7 +23,6 @@ class _sunXi(object):
 class _raw(object):
 
     def __getitem__(self, value):
-
         return value
 
 _pin_map = {
@@ -48,26 +47,7 @@ _pin_map = {
         26: 10
     },
 
-    # BCM pin to actual GPIO pin
-    BCM: {
-        2: 12,
-        3: 11,
-        4: 6,
-        7: 10,
-        8: 13,
-        9: 16,
-        10: 15,
-        11: 14,
-        14: 198,
-        15: 199,
-        17: 1,
-        18: 7,
-        22: 3,
-        23: 19,
-        24: 18,
-        25: 2,
-        27: 0
-    },
+    RAW: _raw(),
 
     SUNXI: _sunXi(),
 
@@ -81,11 +61,10 @@ def set_custom_pin_mappings(mappings):
 
 
 def get_gpio_pin(mode, channel):
-    assert mode in [BOARD, BCM, RAW, SUNXI, CUSTOM]
+    assert mode in [BOARD, RAW, SUNXI, CUSTOM]
     return _pin_map[mode][channel]
 
 
-bcm = functools.partial(get_gpio_pin, BCM)
 board = functools.partial(get_gpio_pin, BOARD)
 raw = functools.partial(get_gpio_pin, RAW)
 sunxi = functools.partial(get_gpio_pin, SUNXI)
